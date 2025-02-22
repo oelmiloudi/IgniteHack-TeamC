@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("toggleMapBtn").addEventListener("click", function () {
         const mapContainer = document.getElementById("mapContainer");
-    
+
         // Toggle visibility
         if (mapContainer.style.visibility === "hidden") {
             mapContainer.style.visibility = "visible";
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
             mapContainer.style.visibility = "hidden";
             return; // Don't reload the map if hiding
         }
-    
+
         // Initialize map only once
         if (!mapInitialized) {
             fetchData("http://127.0.0.1:5000/api/map-data", data => {
@@ -103,15 +103,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.error("Invalid API response format or empty data:", data);
                     return;
                 }
-    
+
                 // Create map instance
                 map = L.map('map').setView([37.8, -96], 4);
-    
+
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 10,
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
-    
+
                 // Add markers for each state
                 data.forEach(state => {
                     if (!state.lat || !state.lon) {
@@ -121,10 +121,52 @@ document.addEventListener("DOMContentLoaded", function () {
                     const marker = L.marker([state.lat, state.lon]).addTo(map);
                     marker.bindPopup(`<b>${state.state}</b><br>Total Wells: ${state.total_wells}<br>Avg Barrels/Year: ${state.avg_production}`);
                 });
-    
+
                 mapInitialized = true;
             });
         }
     });
-    
+
+    // **5️⃣ Handle Prediction Form Submission**
+    document.getElementById("predictionForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent page reload
+
+        // Get user inputs
+        const year = document.getElementById("yearInput").value;
+        const totalWells = document.getElementById("wellsInput").value;
+
+        // Validate inputs
+        if (year < 2024 || totalWells <= 0) {
+            alert("Please enter a valid future year (2024 or later) and a positive well count.");
+            return;
+        }
+
+        // API call to Flask backend
+        fetch("http://127.0.0.1:5000/api/predict-well-performance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ year: parseInt(year), total_wells: parseInt(totalWells) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert("Error: " + data.error);
+                return;
+            }
+
+            // Display results on UI
+            document.getElementById("predictionResults").innerHTML = `
+                <h4>Prediction Results</h4>
+                <p><strong>Year:</strong> ${data.year}</p>
+                <p><strong>Total Wells:</strong> ${data.total_wells}</p>
+                <p><strong>Predicted Oil Production:</strong> ${data.predicted_oil_production} barrels</p>
+                <p><strong>Predicted Gas Production:</strong> ${data.predicted_gas_production} barrels</p>
+            `;
+        })
+        
+        .catch(error => {
+            console.error("Error fetching prediction:", error);
+            alert("Failed to get prediction. Check API connection.");
+        });
+    });
 });

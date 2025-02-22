@@ -1,6 +1,8 @@
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import psycopg2
+import pickle
+import numpy as np
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -9,8 +11,8 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 DB_CONFIG = {
     "dbname": "WellsData",
     "user": "teamc-admin",
-    "password": "123456",  # Update with secure credentials
-    "host": "127.0.0.1",   # Change to Google Cloud instance if needed
+    "password": "123456",  
+    "host": "127.0.0.1",   
     "port": "5432"
 }
 
@@ -108,7 +110,44 @@ def get_map_data():
         print("Error in /api/map-data:", str(e))  # Log error
         return jsonify({"error": str(e)}), 500
 
+# Load trained Random Forest models
+with open("random_forest_oil.pkl", "rb") as f:
+    oil_model = pickle.load(f)
 
+with open("random_forest_gas.pkl", "rb") as f:
+    gas_model = pickle.load(f)
+
+@app.route('/api/predict-well-performance', methods=['POST'])
+def predict_well_performance():
+    try:
+        # Get JSON input
+        data = request.json
+        year = int(data.get("year"))  # Future year for prediction
+        total_wells = int(data.get("total_wells"))  # Expected well count
+
+        # Ensure valid inputs
+        if year < 2024:
+            return jsonify({"error": "Year must be 2024 or later"}), 400
+        if total_wells <= 0:
+            return jsonify({"error": "Total wells must be positive"}), 400
+
+        # Prepare input for the model
+        input_data = np.array([[year, total_wells]])
+
+        # Make predictions
+        oil_prediction = oil_model.predict(input_data)[0]
+        gas_prediction = gas_model.predict(input_data)[0]
+
+        # Return JSON response
+        return jsonify({
+            "year": year,
+            "total_wells": total_wells,
+            "predicted_oil_production": round(oil_prediction, 2),
+            "predicted_gas_production": round(gas_prediction, 2)
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
