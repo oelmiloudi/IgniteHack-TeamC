@@ -122,7 +122,6 @@ Inference:
 
 6. Usage Instructions
 -----------------
-
 1. View Production Trends:
    - On page load, you’ll see a “Total Oil Production Over Time” line chart and a “Wells Per State” bar chart.
 
