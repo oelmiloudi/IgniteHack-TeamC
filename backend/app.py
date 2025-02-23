@@ -3,17 +3,22 @@ from flask_cors import CORS
 import psycopg2
 import pickle
 import numpy as np
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from credentials.env
+load_dotenv("credentials.env")
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Database connection details
+# Database connection details from environment variables
 DB_CONFIG = {
-    "dbname": "WellsData",
-    "user": "teamc-admin",
-    "password": "123456",  
-    "host": "127.0.0.1",   
-    "port": "5432"
+    "dbname": os.getenv("DBNAME"),
+    "user": os.getenv("USER"),
+    "password": os.getenv("PASSWORD"),
+    "host": os.getenv("HOST"),
+    "port": os.getenv("PORT")
 }
 
 def get_db_connection():
@@ -21,7 +26,7 @@ def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
 
 
-# **1️⃣ Total Oil Production Over Time**
+# Total Oil Production Over Time
 @app.route('/api/trends', methods=['GET'])
 def get_trends():
     try:
@@ -38,7 +43,7 @@ def get_trends():
         return jsonify({"error": str(e)}), 500
 
 
-# **2️⃣ Wells Per State**
+# Wells Per State
 @app.route('/api/wells-per-state', methods=['GET'])
 def get_wells_per_state():
     try:
@@ -55,7 +60,7 @@ def get_wells_per_state():
         return jsonify({"error": str(e)}), 500
 
 
-# **3️⃣ Most & Least Producing States**
+# Most & Least Producing States
 @app.route('/api/most-least-producing', methods=['GET'])
 def get_most_least_producing():
     try:
@@ -72,7 +77,8 @@ def get_most_least_producing():
         return jsonify({"most_producing": top_5, "least_producing": bottom_5})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
+# Retrieve Map Data (Pinpoints)
 @app.route('/api/map-data', methods=['GET'])
 def get_map_data():
     try:
@@ -117,6 +123,7 @@ with open("random_forest_oil.pkl", "rb") as f:
 with open("random_forest_gas.pkl", "rb") as f:
     gas_model = pickle.load(f)
 
+# Predict well performance in barrells
 @app.route('/api/predict-well-performance', methods=['POST'])
 def predict_well_performance():
     try:

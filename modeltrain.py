@@ -4,14 +4,19 @@ import pickle
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from credentials.env
+load_dotenv("credentials.env")
 
 # Database connection details
 DB_CONFIG = {
-    "dbname": "WellsData",
-    "user": "teamc-admin",
-    "password": "123456",  
-    "host": "127.0.0.1",  
-    "port": "5432"
+    "dbname": os.getenv("DBNAME"),
+    "user": os.getenv("USER"),
+    "password": os.getenv("PASSWORD"),
+    "host": os.getenv("HOST"),
+    "port": os.getenv("PORT")
 }
 
 # Connect to PostgreSQL and fetch data
@@ -32,7 +37,6 @@ def fetch_well_data():
     print("Columns in DataFrame:", df.columns)
     
     return df
-
 
 # Load data
 df = fetch_well_data()

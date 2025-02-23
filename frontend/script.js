@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error("Error loading data:", error));
     }
 
-    // **1️⃣ Total Oil Production Over Time**
+    // Total Oil Production Over Time
     fetchData("http://127.0.0.1:5000/api/trends", data => {
         const ctx = document.getElementById("trendChart").getContext("2d");
         new Chart(ctx, {
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // **2️⃣ Wells Per State**
+    // Wells Per State
     fetchData("http://127.0.0.1:5000/api/wells-per-state", data => {
         const ctx = document.getElementById("wellsPerStateChart").getContext("2d");
         new Chart(ctx, {
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // **3️⃣ Most & Least Producing States**
+    // Most & Least Producing States
     fetchData("http://127.0.0.1:5000/api/most-least-producing", data => {
         const ctx1 = document.getElementById("mostProducingChart").getContext("2d");
         new Chart(ctx1, {
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // **4️⃣ Interactive Map Implementation (Independent Functionality)**
+    // Interactive Map Implementation (Independent Functionality)
     let mapInitialized = false;
     let map;
 
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         return;
                     }
                     const marker = L.marker([state.lat, state.lon]).addTo(map);
-                    marker.bindPopup(`<b>${state.state}</b><br>Total Wells: ${state.total_wells}<br>Avg Barrels/Year: ${state.avg_production}`);
+                    marker.bindPopup(`<b>${state.state}</b><br>Total Wells: ${state.total_wells}<br>Avg Millions of Barrels/Year: ${state.avg_production}`);
                 });
 
                 mapInitialized = true;
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // **5️⃣ Handle Prediction Form Submission**
+    // Handle Prediction Form Submission
     document.getElementById("predictionForm").addEventListener("submit", function (event) {
         event.preventDefault(); // Prevent page reload
 
@@ -159,8 +159,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 <h4>Prediction Results</h4>
                 <p><strong>Year:</strong> ${data.year}</p>
                 <p><strong>Total Wells:</strong> ${data.total_wells}</p>
-                <p><strong>Predicted Oil Production:</strong> ${data.predicted_oil_production} barrels</p>
-                <p><strong>Predicted Gas Production:</strong> ${data.predicted_gas_production} barrels</p>
+                <p><strong>Predicted Oil Production:</strong> ${data.predicted_oil_production} millions of barrels</p>
+                <p><strong>Predicted Gas Production:</strong> ${data.predicted_gas_production} millions of barrels</p>
             `;
         })
         
